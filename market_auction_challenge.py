@@ -80,23 +80,27 @@ if __name__ == "__main__":
     file_handle = open(in_file)
     market_auction_source = json.load(file_handle)
 
-    if sys.argv == 1:
+    if len(sys.argv) == 1:
+        check_again = ''
         valid_ids = get_valid_ids(market_auction_source)
+        while check_again != 'quit':
+            id = input(f"Enter a valid id {valid_ids}: ")
+            if id not in valid_ids:
+                raise ValueError("Input not in valid range!!")
 
-        id = input(f"Enter a valid id {valid_ids}: ")
-        if id not in valid_ids:
-            raise ValueError("Input not in valid range!!")
+            valid_yrs = get_valid_years(id, market_auction_source)
+            year = input(f"Enter the year for calculation {valid_yrs}: ")
 
-        valid_yrs = get_valid_years(id, market_auction_source)
-        year = input(f"Enter the year for calculation {valid_yrs}: ")
-        if year not in valid_yrs:
-            raise ValueError("Year is not in valid range " +
-                             f"for specified id {id}!!")
+            obj_dict = calc_rates(id, year, market_auction_source,
+                                  format_dollar=True)
+            print_object(obj_dict)
+
+            check_again = input("Type 'quit' to abort!!: ")
     else:
         input_val = sys.argv[1]
         (id, year) = input_val.split(',')
 
-    obj_dict = calc_rates(id, year, market_auction_source,
-                          format_dollar=True)
-    print_object(obj_dict)
+        obj_dict = calc_rates(id, year, market_auction_source,
+                              format_dollar=True)
+        print_object(obj_dict)
 # end main
