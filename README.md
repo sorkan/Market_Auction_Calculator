@@ -17,3 +17,21 @@ Two ways to run the file once you place the json file in the current path
  Test cases:
   run pytest
   
+Running in Non-interactive mode
+$> python market_auction_challenge.py 67352,2007
+
+
+--------------------------------------------------
+Identifier: 67352
+Category: Earthmoving Equipment
+Sub-cat: Dozers
+Make: Caterpillar		Model: D8T
+
+Schedule year: 2007
+Market Value: $ 216,384.71
+Auction Value: $ 126,089.53
+--------------------------------------------------
+
+  
+$> python market_auction_challenge.py 87964,2011
+ID: 87964 not found in source data feed!!
