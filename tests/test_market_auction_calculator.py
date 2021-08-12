@@ -35,19 +35,22 @@ def test_calc_rates_with_invalid_id():
             'auctionValue': 0.00}
 
 
-def test_calc_rate_with_invalid_year():
+def test_calc_rate_with_year_less_than_floor():
     # when invalid year, use default market and auction ratios
     market_auction_data = json.load(open('api-response.json'))
     classifier = market_auction_data['67352']['classification']
     assert calc_rates('67352', '2014', market_auction_data) == \
-           {'classification': classifier, 'marketValue': 13625.04,
-            'auctionValue': 13625.04, 'schedule_year': '2014', 'id': '67352'}
+           {'classification': classifier, 'marketValue': 305709.36096523685,
+            'auctionValue': 151095.1475857824, 'schedule_year': '2014', 'id': '67352'}
 
+
+def test_calc_rate_with_year_greater_than_ceiling():
+    market_auction_data = json.load(open('api-response.json'))
     classifier = market_auction_data['87390']['classification']
-    assert calc_rates('87390', '2016', market_auction_data,
+    assert calc_rates('87390', '2014', market_auction_data,
                       format_dollar=True) == \
-           {'classification': classifier, 'marketValue': '$ 30,007.76',
-            'auctionValue': '$ 20,426.29', 'schedule_year': '2016',
+           {'classification': classifier, 'marketValue': '$ 26,514.86',
+            'auctionValue': '$ 18,048.67', 'schedule_year': '2014',
             'id': '87390'}
 
 

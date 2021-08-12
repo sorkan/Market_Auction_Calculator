@@ -21,10 +21,23 @@ def get_valid_years(id, market_auction_data):
 def pretty_print(cost):
     return "$ {:,.2f}".format(cost)
 
-def calc_prev_years(def_market_ratio, def_auction_ratio, marketratio, auctioratio):
-    new_market = marketratio - (marketratio * def_market_ratio)
-    new_auction = auctioratio - (auctioratio * def_auction_ratio)
+
+def calc_prev_years(def_market_ratio, def_auction_ratio, marketratio, auctioratio, add_sub):
+    """
+    param: def_market_ratio
+    param: def_auction_ratio
+    param: marketratio - previous market ratio value based on min/max year
+    param: auctionratio - previous auction ratio value based on min/max year
+    param: add_sub - add or subtract based on if moving backwards or forwards in years
+    """
+    if add_sub == 'sub':
+        new_market = marketratio - (marketratio * def_market_ratio)
+        new_auction = auctioratio - (auctioratio * def_auction_ratio)
+    else:
+        new_market = marketratio + (marketratio * def_market_ratio)
+        new_auction = auctioratio + (auctioratio * def_auction_ratio)
     return new_market, new_auction
+
 
 def calc_rates(id, year, market_auction_data, format_dollar=None):
     # guard clause
@@ -44,20 +57,30 @@ def calc_rates(id, year, market_auction_data, format_dollar=None):
         marketRatio = sched_year_vals['marketRatio']
         auctionRatio = sched_year_vals['auctionRatio']
     except KeyError:
+        curr_year_value = int(year)
+        default_market_ratio = market_auction_data[id]['schedule']['defaultMarketRatio']
+        default_auction_ratio = market_auction_data[id]['schedule']['defaultAuctionRatio']
+        add_sub = 'add'
+
         if year < min(market_auction_data[id]['schedule']['years']):
-            sched_year_vals = market_auction_data[id]['schedule']['years'][min(market_auction_data[id][
-                                                                                   'schedule']['years'])]
+            base_year = min(market_auction_data[id]['schedule']['years'])
+            diff_year = int(base_year) - curr_year_value
+            yrs_list = [f"{yrs}" for yrs in range(curr_year_value + diff_year-1, curr_year_value-1, -1)]
+            add_sub = 'sub'
+        else:
+            base_year = max(market_auction_data[id]['schedule']['years'])
+            yrs_list = [f"{yrs}" for yrs in range(int(base_year)+1, curr_year_value+1)]
+
+        for year in yrs_list:
+            sched_year_vals = market_auction_data[id]['schedule']['years'][base_year]
             marketRatio = sched_year_vals['marketRatio']
             auctionRatio = sched_year_vals['auctionRatio']
-            default_market_ratio = market_auction_data[id][
-                'schedule']['defaultMarketRatio']
-            default_auction_ratio = market_auction_data[id][
-                'schedule']['defaultAuctionRatio']
 
-            marketRatio, auctionRatio = calc_prev_years(default_market_ratio,
-                                                        default_auction_ratio, marketRatio, auctionRatio)
+            marketRatio, auctionRatio = calc_prev_years(default_market_ratio, default_auction_ratio,
+                                                        marketRatio, auctionRatio, add_sub)
             market_auction_data[id]['schedule']['years'][year] = {'marketRatio': marketRatio,
-                                                                  'auctioRatio': auctionRatio}
+                                                                  'auctionRatio': auctionRatio}
+            base_year = year
 
     sale_detail = market_auction_data[id].get('saleDetails', {})
     if sale_detail:
