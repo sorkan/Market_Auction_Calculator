@@ -21,6 +21,10 @@ def get_valid_years(id, market_auction_data):
 def pretty_print(cost):
     return "$ {:,.2f}".format(cost)
 
+def calc_prev_years(def_market_ratio, def_auction_ratio, marketratio, auctioratio):
+    new_market = marketratio - (marketratio * def_market_ratio)
+    new_auction = auctioratio - (auctioratio * def_auction_ratio)
+    return new_market, new_auction
 
 def calc_rates(id, year, market_auction_data, format_dollar=None):
     # guard clause
@@ -40,10 +44,20 @@ def calc_rates(id, year, market_auction_data, format_dollar=None):
         marketRatio = sched_year_vals['marketRatio']
         auctionRatio = sched_year_vals['auctionRatio']
     except KeyError:
-        marketRatio = market_auction_data[id][
-            'schedule']['defaultMarketRatio']
-        auctionRatio = market_auction_data[id][
-            'schedule']['defaultAuctionRatio']
+        if year < min(market_auction_data[id]['schedule']['years']):
+            sched_year_vals = market_auction_data[id]['schedule']['years'][min(market_auction_data[id][
+                                                                                   'schedule']['years'])]
+            marketRatio = sched_year_vals['marketRatio']
+            auctionRatio = sched_year_vals['auctionRatio']
+            default_market_ratio = market_auction_data[id][
+                'schedule']['defaultMarketRatio']
+            default_auction_ratio = market_auction_data[id][
+                'schedule']['defaultAuctionRatio']
+
+            marketRatio, auctionRatio = calc_prev_years(default_market_ratio,
+                                                        default_auction_ratio, marketRatio, auctionRatio)
+            market_auction_data[id]['schedule']['years'][year] = {'marketRatio': marketRatio,
+                                                                  'auctioRatio': auctionRatio}
 
     sale_detail = market_auction_data[id].get('saleDetails', {})
     if sale_detail:
